@@ -364,6 +364,21 @@
         </div>
     </div>
 
+    <button onclick="openFullscreen()">На весь екран</button>
+
+    <script>
+        function openFullscreen() {
+            const elem = document.documentElement; // або конкретний елемент
+            if (elem.requestFullscreen) {
+                elem.requestFullscreen();
+            } else if (elem.webkitRequestFullscreen) { // Safari
+                elem.webkitRequestFullscreen();
+            } else if (elem.msRequestFullscreen) { // IE11
+                elem.msRequestFullscreen();
+            }
+        }
+    </script>
+
 
     <script>
         let isEditingEnabled = true; // флаг дозволу редагування
