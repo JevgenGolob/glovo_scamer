@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <title>Glovo order creator</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Roboto', sans-serif;
+            font-size: 18px;
+            background-image: url('map.png');
+            background-size: 100% auto;
+            background-position: top center;
+            background-repeat: no-repeat;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .panel {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            height: 95%;
+            max-height: 100%;
+            background: white;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.2s ease;
+            transform: translateY(0%);
+            touch-action: none;
+            overflow: hidden;
+        }
+
+        .panel.collapsed {
+            /* Зберігаємо висоту хедера */
+            transform: translateY(calc(100% - var(--header-height)));
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: white;
+            cursor: grab;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            box-shadow: 0 0px 10px rgba(0, 0, 0, 0.3);
+            user-select: none;
+            /* Задаємо змінну CSS для висоти хедера */
+            --header-height: auto;
+        }
+
+        .title {
+            font-weight: bold;
+            font-size: 19px;
+        }
+
+        .subtitle {
+            color: #555;
+            margin-top: 4px;
+            white-space: pre-line;
+        }
+
+        .content {
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        .section {
+            padding: 20px;
+        }
+
+        .status {
+            background: #c6f3e2;
+            color: #1a8069;
+            padding: 5px 10px;
+            display: inline-block;
+            border-radius: 5px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+
+        .status.updated {
+            background-color: #e0e0e0;
+            /* світло-сірий фон */
+            color: #555555;
+            /* темно-сірий текст */
+        }
+
+        .order-id {
+            border: 2px solid #c6f3e2;
+            padding: 10px;
+            border-radius: 10px;
+            font-size: 20px;
+            font-weight: bold;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+
+        .item-count {
+            color: #1a8069;
+            font-weight: bold;
+            margin-top: 10px;
+            /* float: right; */
+        }
+
+        .btn {
+            background: #000;
+            color: #fff;
+            padding: 15px;
+            font-size: 20px;
+            width: calc(100% - 32px);
+            margin: 0 16px 16px;
+            cursor: pointer;
+            position: sticky;
+            bottom: 0;
+            box-sizing: border-box;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        @keyframes slideInUp {
+            0% {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOutDown {
+            0% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+        }
+
+        #fullscreenOverlay {
+            position: fixed;
+            top: 5%;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #FFD300;
+            /* Жовтий фон */
+            z-index: 9999;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 25%;
+            border-radius: 20px;
+            display: none;
+            /* початково схований */
+            /* додамо плавність появи */
+            animation-fill-mode: forwards;
+        }
+
+        .glovo-logo {
+            width: 160px;
+            margin-bottom: 40px;
+        }
+
+        #fullscreenNumber {
+            background: white;
+            color: black;
+            font-size: 48px;
+            font-weight: bold;
+            padding: 20px 40px;
+            border-radius: 12px;
+        }
+
+        .close-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 32px;
+            width: 40px;
+            height: 40px;
+            background: white;
+            color: #00a082;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 40px;
+            font-weight: lighter;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Фон модального вікна */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            /* затемнення */
+            display: none;
+            /* сховане спочатку */
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+        }
+
+        /* Вікно */
+        .modal {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            min-width: 75%;
+        }
+
+        .modal p {
+            font-size: 20px;
+            margin-bottom: 30px;
+        }
+
+        /* Кнопки у модальному вікні */
+        .modal-buttons {
+            display: flex;
+            /* justify-content: center; */
+            flex-direction: column;
+            /* gap: 20px; */
+        }
+
+        /* Confirm кнопка */
+        .btn-confirm {
+            background: black;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 18px;
+            border-radius: 12px;
+            cursor: pointer;
+        }
+
+        /* Skip кнопка */
+        .btn-skip {
+            background: none;
+            border: none;
+            color: black;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 15px 40px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="panel" class="panel expanded">
+
+        <div class="header" id="dragHandle">
+            <div>
+                <div class="title editable">_Restoraunt name_</div>
+                <div class="subtitle"><strong>Pickup</strong></div>
+                <div class="subtitle">1 order for pickup</div>
+            </div>
+            <img src="call_to_costumer_or_partner.png">
+        </div>
+
+        <div class="content">
+            <div class="section" style="border-bottom: 1px solid #ccc;">
+                <table>
+                    <tr>
+                        <td style="vertical-align: top; padding-right: 10px;">
+                            <img src="gps_icon.png">
+                        </td>
+                        <td>
+                            <div id="res_client_adres" class="editable">_Restoraunt adres_</div>
+                            <div id="client_apartment_number" class="editable">53-633 Wrocław</div>
+                            <div id="clint_floor_number" class="editable">Poland , WRO</div>
+                            <div id="res_name">Company: <span class="editable">_Restoraunt name_</span></div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="section">
+                <table class="section-table" style="border-collapse: collapse; width: 100%;">
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="status">Ready</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div class="order-id">
+                                    <span>#<span class="editable">000</span></span>
+                                    <img class="open_full_number" src="full_screen_number.png" style="padding: 0 5px;">
+                                </div>
+                            </td>
+                        </tr>
+                        <tr id="pick_up_order_info">
+                            <td>
+                                <span id="order_id" class="editable">603292688315</span>
+                                <span> - </span>
+                                <span id="order_code">#<span class="editable">000</span></span>
+                                <span> - </span>
+                                <span id="costumer_name" class="editable">_Costumer name_</span>
+                            </td>
+                        </tr>
+                        <tr id="dropp_off_order_info" style="display: none; line-height: 1.75;">
+                            <td>
+                                <span id="dropp_off_order_id" class="editable"
+                                    style="font-weight: bold; font-size: 22px;">None</span>
+                                <br />
+                                <span id="dropp_off_res_mame" class="editable">None</span>
+                            </td>
+                        </tr>
+            </div>
+            <tr>
+                <td style="text-align: right;">
+                    <div class="item-count">
+                        <span class="editable">1 </span>item
+                        <img src="item_arrow.png" style="padding-bottom: 5px;">
+                    </div>
+                </td>
+            </tr>
+            </tbody>
+            </table>
+
+        </div>
+
+        <div class="section" style="line-height: 1.5">
+            <div style="font-size: 15px; color: #010101;">Payment</div>
+            <div id="paid_info">No payment at vendor</div>
+        </div>
+    </div>
+
+    <button class="btn">Confirm pickup</button>
+    </div>
+
+    <div id="fullscreenOverlay" style="display: none;">
+        <img src="glovo_logo.png" class="glovo-logo" alt="Glovo logo" />
+        <div id="fullscreenNumber">#000</div>
+        <div class="close-button">&times;</div>
+    </div>
+
+    <!-- Модальне вікно -->
+    <div class="modal-overlay" id="modal">
+        <div class="modal">
+            <p>Confirm pick-up?</p>
+            <div class="modal-buttons">
+                <button class="btn-confirm" id="confirmBtn"><strong style="font-size: 20px;">Confirm</strong></button>
+                <button class="btn-skip" id="skipBtn" style="color: #00a082;"><strong>Skip</strong></button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        let isEditingEnabled = true; // флаг дозволу редагування
+        const btn = document.querySelector('.btn');
+        const modal = document.getElementById('modal');
+        const confirmBtn = document.getElementById('confirmBtn');
+        const skipBtn = document.getElementById('skipBtn');
+        const panel = document.getElementById('panel');
+        const header = panel.querySelector('.header');
+        const fullscreenTrigger = document.querySelector('.open_full_number');
+        const fullscreenOverlay = document.getElementById('fullscreenOverlay');
+        const fullscreenNumber = document.getElementById('fullscreenNumber');
+        const closeButton = fullscreenOverlay.querySelector('.close-button');
+
+        // Зберігаємо початковий текст для заміни в editable
+        document.querySelectorAll('.editable').forEach(el => {
+            el.dataset.originalText = el.innerText;
+        });
+
+        // Редагування тексту з синхронною заміною по всіх editable
+        document.querySelectorAll('.editable').forEach(el => {
+            el.addEventListener('click', (e) => {
+                if (!isEditingEnabled) return; // виходимо, якщо редагування вимкнене
+                e.stopPropagation();
+                const current = el.innerText;
+                const updated = prompt('Змініть текст:', current);
+                if (updated !== null && updated !== current) {
+                    const wordToReplace = el.dataset.originalText.trim();
+                    document.querySelectorAll('.editable').forEach(otherEl => {
+                        if (otherEl.innerText.includes(wordToReplace)) {
+                            const regex = new RegExp(wordToReplace, 'g');
+                            otherEl.innerText = otherEl.innerText.replace(regex, updated);
+                            otherEl.dataset.originalText = otherEl.dataset.originalText.replace(regex, updated);
+                        }
+                    });
+                }
+            });
+        });
+
+        // Встановлюємо CSS змінну --header-height динамічно
+        function updateHeaderHeight() {
+            const height = header.offsetHeight;
+            panel.style.setProperty('--header-height', height + 'px');
+        }
+        updateHeaderHeight();
+
+        // Оновлюємо висоту хедера при зміні вмісту (щоб змінна CSS завжди була актуальною)
+        // Наприклад, якщо редагують текст у заголовку
+        new MutationObserver(updateHeaderHeight).observe(header, { childList: true, subtree: true, characterData: true });
+
+        // Логіка свайпу
+        let startY = 0;
+        let endY = 0;
+        let isSwiping = false;
+
+        panel.addEventListener('touchstart', (e) => {
+            startY = e.touches[0].clientY;
+            isSwiping = false;
+        });
+
+        panel.addEventListener('touchmove', (e) => {
+            endY = e.touches[0].clientY;
+            if (Math.abs(endY - startY) > 10) {
+                isSwiping = true;
+            }
+        });
+
+        panel.addEventListener('touchend', () => {
+            if (!isSwiping) return; // Якщо свайпу не було - не змінюємо стан
+
+            const deltaY = endY - startY;
+            if (deltaY > 50) {
+                panel.classList.add('collapsed');
+                panel.classList.remove('expanded');
+            } else if (deltaY < -50) {
+                panel.classList.remove('collapsed');
+                panel.classList.add('expanded');
+            }
+        });
+
+        fullscreenTrigger.addEventListener('click', () => {
+            const orderIdBlock = document.querySelector('.order-id');
+            fullscreenNumber.textContent = orderIdBlock.innerText.trim();
+
+            fullscreenOverlay.style.display = 'flex';
+            fullscreenOverlay.style.animation = 'slideInUp 0.25s ease forwards';
+        });
+
+        closeButton.addEventListener('click', () => {
+            fullscreenOverlay.style.animation = 'slideOutDown 0.25s ease forwards';
+
+            // Після завершення анімації сховати елемент
+            fullscreenOverlay.addEventListener('animationend', function handler() {
+                fullscreenOverlay.style.display = 'none';
+                fullscreenOverlay.removeEventListener('animationend', handler);
+            });
+        });
+
+        // Відкрити модалку при натисканні
+        btn.addEventListener('click', () => {
+
+            const btnText = btn.textContent.trim(); // отримуємо текст кнопки, прибираємо зайві пробіли
+
+            console.log(btnText)
+
+            if (btnText === 'Confirm pickup') {
+                modal.style.display = 'flex';
+            } else if (btnText === 'Confirm drop-off') {
+                modal.style.display = 'flex';
+                modal.innerHTML = `
+                <div style="position: relative; max-width: 80%; max-height: 80%; margin:auto;">
+                    <img src="jjj.png" style="width:100%; height:auto; border-radius:8px;">
+                    <button id="closeModal" style="
+                    position: absolute; 
+                    top: 10px; 
+                    right: 10px; 
+                    background: white; 
+                    border: none; 
+                    font-size: 18px;
+                    cursor: pointer;
+                    border-radius: 50%;
+                    width: 30px;
+                    height: 30px;
+                    ">×</button>
+                </div>
+                `;
+
+                // Додамо обробник для кнопки закриття
+                document.getElementById('closeModal').addEventListener('click', () => {
+                    modal.style.display = 'none';
+                    modal.innerHTML = ''; // Очистити вміст модалки
+                });
+            }
+
+        });
+
+        // Закрити модалку при натисканні Skip
+        skipBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+
+        // Закрити модалку при натисканні Confirm
+        confirmBtn.addEventListener('click', () => {
+            isEditingEnabled = false; // вимикаємо редагування після кліку
+            modal.style.display = 'none';
+
+            const nameElement = document.getElementById('costumer_name');
+            const nameText = nameElement ? nameElement.textContent : '';
+            const titleElement = document.querySelector('.title.editable');
+            const titleText = titleElement ? titleElement.textContent.trim() : '';
+
+            titleElement.textContent = nameText;
+            // Змінити "Pickup" на "Drop-off"
+            const subtitleElement = document.querySelector('.subtitle strong');
+            if (subtitleElement) {
+                subtitleElement.textContent = 'Drop-off';
+            }
+            // Взяти текст з #order_code і #order_id
+            const orderCodeNumber = document.querySelector('#order_code .editable')?.textContent || '';
+            const orderId = document.getElementById('order_id')?.textContent || '';
+            // Зібрати текст для заміни
+            const newSubtitleText = `#${orderCodeNumber} - ${orderId}`;
+
+            // Замінити текст у .subtitle (який містить "1 order for pickup")
+            const subtitleText = document.querySelector('.subtitle:not(:has(strong))'); // вибираємо .subtitle без strong
+            subtitleText.textContent = newSubtitleText;
+
+            // Список адрес
+            const addresses = [
+                "Długa 66B, 53-633 Wrocław",
+                "Gwiaździsta 64, 53-323 Wrocław",
+                "Borowska 213, 50-565 Wrocław"
+            ];
+
+            // Вибір випадкової адреси
+            const randomAddress = addresses[Math.floor(Math.random() * addresses.length)];
+
+            // Заміна тексту в блоці
+            document.getElementById("res_client_adres").innerText = randomAddress;
+
+            // Генерація випадкового числа від 1 до 999
+            const randomApartmentNumber = Math.floor(Math.random() * 20) + 1;
+
+            // Заміна тексту
+            document.getElementById("client_apartment_number").innerText = "Apartment number: " + randomApartmentNumber;
+
+            // Генерація випадкового числа для поверху (наприклад, від 1 до 20)
+            const randomFloorNumber = Math.floor(Math.random() * 5);
+
+            // Заміна тексту
+            document.getElementById("clint_floor_number").innerText = "Floor: " + randomFloorNumber;
+
+            // Видаляння елемнтів
+            const statusEl = document.querySelector("div.status");
+            if (statusEl) statusEl.remove();
+
+            const orderIdEl = document.querySelector("div.order-id");
+            if (orderIdEl) orderIdEl.remove();
+
+            const PickUpInfoBlock = document.getElementById("pick_up_order_info")
+            PickUpInfoBlock.remove()
+
+            document.getElementById("dropp_off_order_id").innerText = orderId
+            document.getElementById("dropp_off_res_mame").innerText = titleText
+            document.getElementById("paid_info").innerText = "Paid online"
+
+
+            const dropOffInfoBlock = document.getElementById("dropp_off_order_info");
+            dropOffInfoBlock.style.display = "block"
+
+            const confirmButton = document.querySelector('button.btn');
+            confirmButton.innerHTML = "Confirm drop-off"
+
+
+            // const orderId2 = document.getElementById("order_id");
+            // if (orderId2) {
+            //     orderId2.style.fontWeight = "bold";    // робить текст жирним
+            //     orderId2.style.fontSize = "22px";      // збільшує розмір шрифту (можеш змінити значення)
+            // }
+
+            // const orderInfo = document.getElementById("order_info");
+            // if (orderInfo) {
+            //     // Знаходимо всі <span> всередині order_info
+            //     const spans = orderInfo.querySelectorAll("span");
+            //     // Видаляємо кожен <span>
+            //     spans.forEach(span => span.remove());
+            // }
+
+            // Згорнути панель
+            panel.classList.add('collapsed');
+            panel.classList.remove('expanded');
+        });
+
+        // Закрити модалку при кліку поза вікном
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        const statusElement = document.querySelector('.status');
+
+        statusElement.addEventListener('click', () => {
+            if (statusElement.classList.contains('updated')) {
+                statusElement.textContent = 'Ready';
+                statusElement.classList.remove('updated');
+            } else {
+                statusElement.textContent = 'Will be ready soon';
+                statusElement.classList.add('updated');
+            }
+        });
+    </script>
+
+</body>
+
+</html>
