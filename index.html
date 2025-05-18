@@ -398,6 +398,27 @@
     </div>
 
     <script>
+
+        function isIOS() {
+            return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+        }
+
+        function isAndroid() {
+            return /Android/.test(navigator.userAgent);
+        }
+
+        // Приклад використання:
+        if (isIOS()) {
+            console.log("Користувач на iOS");
+            const fullscreenContainer = document.querySelector(".fullscreen-container");
+            fullscreenContainer.remove()
+
+        } else if (isAndroid()) {
+            console.log("Користувач на Android");
+        } else {
+            console.log("Інша платформа");
+        }
+
         function openFullscreen() {
             const elem = document.documentElement;
             const btnContainer = document.querySelector(".fullscreen-container");
