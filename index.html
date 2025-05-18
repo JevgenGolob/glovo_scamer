@@ -258,6 +258,31 @@
             cursor: pointer;
             padding: 15px 40px;
         }
+
+        /* Контейнер для кнопки */
+        .fullscreen-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            /* щоб завжди була зверху */
+        }
+
+        #fullscreenBtn {
+            font-size: 20px;
+            padding: 20px;
+            cursor: pointer;
+            border: none;
+            border-radius: 10px;
+            background-color: #007bff;
+            color: white;
+            transition: background-color 0.3s;
+        }
+
+        #fullscreenBtn:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 
@@ -364,18 +389,25 @@
         </div>
     </div>
 
-    <button onclick="openFullscreen()">На весь екран</button>
+    <div class="fullscreen-container">
+        <button id="fullscreenBtn" onclick="openFullscreen()">На весь екран</button>
+    </div>
 
     <script>
         function openFullscreen() {
-            const elem = document.documentElement; // або конкретний елемент
+            const elem = document.documentElement;
+            const btnContainer = document.querySelector(".fullscreen-container");
+
             if (elem.requestFullscreen) {
                 elem.requestFullscreen();
-            } else if (elem.webkitRequestFullscreen) { // Safari
+            } else if (elem.webkitRequestFullscreen) {
                 elem.webkitRequestFullscreen();
-            } else if (elem.msRequestFullscreen) { // IE11
+            } else if (elem.msRequestFullscreen) {
                 elem.msRequestFullscreen();
             }
+
+            // Ховаємо контейнер з кнопкою
+            btnContainer.style.display = "none";
         }
     </script>
 
