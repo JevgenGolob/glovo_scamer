@@ -275,7 +275,7 @@
 
         #fullscreenBtn {
             font-size: 20px;
-            padding: 20px;
+            padding: 10px;
             cursor: pointer;
             border: none;
             border-radius: 10px;
@@ -287,6 +287,105 @@
         #fullscreenBtn:hover {
             background-color: #0056b3;
         }
+
+        /* Анімація пульсації тексту */
+        @keyframes pulseText {
+            0% {
+                text-shadow: 0 0 0 rgba(255, 200, 0, 0.8);
+            }
+
+            50% {
+                text-shadow: 0 0 10px rgba(255, 200, 0, 1);
+            }
+
+            100% {
+                text-shadow: 0 0 0 rgba(255, 200, 0, 0.8);
+            }
+        }
+
+        .pulse-text {
+            animation: pulseText 1s ease-in-out infinite;
+        }
+
+        /* Фон під модальним вікном */
+        #customOverlay123 {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        /* Модальне вікно */
+        #customModal123 {
+            background: white;
+            padding: 20px 30px;
+            border-radius: 10px;
+            width: 75%;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+            text-align: center;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        #customModal123 button {
+            margin-top: 18px;
+            padding: 9px 18px;
+            background-color: #28a745;
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+        }
+
+        #customModal123 button:hover {
+            background-color: #1e7e34;
+        }
+
+        #modalConfirm {
+            margin-top: 10px;
+            padding: 5px 10px;
+            background-color: #28a745;
+            /* зелений */
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            float: right;
+            margin-left: 10px;
+        }
+
+        #modalConfirm:hover {
+            background-color: #218838;
+            /* темніший зелений при наведенні */
+        }
+
+        #modalCancel {
+            margin-top: 10px;
+            padding: 5px 10px;
+            background-color: #dc3545;
+            /* червоний */
+            border: none;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s ease;
+            float: right;
+        }
+
+        #modalCancel:hover {
+            background-color: #c82333;
+            /* темніший червоний при наведенні */
+        }
     </style>
 </head>
 
@@ -296,7 +395,7 @@
 
         <div class="header" id="dragHandle">
             <div>
-                <div class="title editable">_Restoraunt name_</div>
+                <div class="title editable">Restoraunt name</div>
                 <div class="subtitle"><strong>Pickup</strong></div>
                 <div class="subtitle">1 order for pickup</div>
             </div>
@@ -311,10 +410,10 @@
                             <img src="gps_icon.png">
                         </td>
                         <td>
-                            <div id="res_client_adres" class="editable">_Restoraunt adres_</div>
+                            <div id="res_client_adres" class="editable">Restoraunt adres</div>
                             <div id="client_apartment_number" class="editable">53-633 Wrocław</div>
                             <div id="clint_floor_number" class="editable">Poland , WRO</div>
-                            <div id="res_name">Company: <span class="editable">_Restoraunt name_</span></div>
+                            <div id="res_name">Company: <span class="editable">Restoraunt name</span></div>
                         </td>
                     </tr>
                 </table>
@@ -342,7 +441,7 @@
                                 <span> - </span>
                                 <span id="order_code">#<span class="editable">000</span></span>
                                 <span> - </span>
-                                <span id="costumer_name" class="editable">_Costumer name_</span>
+                                <span id="costumer_name" class="editable">Costumer name</span>
                             </td>
                         </tr>
                         <tr id="dropp_off_order_info" style="display: none; line-height: 1.75;">
@@ -394,10 +493,48 @@
     </div>
 
     <div class="fullscreen-container">
-        <button id="fullscreenBtn" onclick="openFullscreen()">На весь екран</button>
+        <button id="fullscreenBtn" onclick="openFullscreen()">Fullscreen mode</button>
+    </div>
+
+    <div id="customModal"
+        style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:white; padding:20px; border-radius:8px; box-shadow:0 0 10px rgba(0,0,0,0.3); z-index:1001; width: 65%;">
+        <div id="modalLabel" style="margin-bottom:10px; font-weight:bold; font-size: 16px;"></div>
+        <input type="text" id="modalInput" style="width:100%; margin-bottom:10px;"><br>
+        <button id="modalConfirm" style="float: right;">Замінити</button>
+        <button id="modalCancel" style="float: right;">Скасувати</button>
+    </div>
+
+    <div id="modalBackdrop"
+        style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:1000;">
+    </div>
+
+    <div id="customOverlay123" style="display: none;">
+        <div id="customModal123">
+            <h2>Інструкція для iPhone</h2>
+            <p>Щоб ввімкнути цей сайт на повний екран потірбно відкрити його для початку в Safari пізніше нажати на
+                поділитися і на додати головний екран, запустити з головного екрану</p>
+            <button id="customCloseBtn123">Закрити</button>
+        </div>
     </div>
 
     <script>
+
+        const overlay = document.getElementById('customOverlay123');
+        const closeBtn = document.getElementById('customCloseBtn123');
+
+        function pulseEditableElements() {
+            const elements = document.querySelectorAll('.editable');
+            elements.forEach(el => el.classList.add('pulse-text'));
+
+            setTimeout(() => {
+                elements.forEach(el => el.classList.remove('pulse-text'));
+            }, 3000); // 3 секунди
+        }
+
+        closeBtn.addEventListener('click', () => {
+            overlay.style.display = 'none';
+            pulseEditableElements();
+        });
 
         function isIOS() {
             return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
@@ -413,10 +550,17 @@
             const fullscreenContainer = document.querySelector(".fullscreen-container");
             fullscreenContainer.remove()
 
+            const windowForIphone = document.getElementById("customOverlay123")
+            windowForIphone.style.display = ""
+
         } else if (isAndroid()) {
-            console.log("Користувач на Android");
+            window.addEventListener('DOMContentLoaded', () => {
+                pulseEditableElements();
+            });
         } else {
-            console.log("Інша платформа");
+            window.addEventListener('DOMContentLoaded', () => {
+                pulseEditableElements();
+            });
         }
 
         function openFullscreen() {
@@ -450,6 +594,34 @@
         const fullscreenNumber = document.getElementById('fullscreenNumber');
         const closeButton = fullscreenOverlay.querySelector('.close-button');
 
+        // Модальне вікно для редагування тексту
+        const modalLabel = document.getElementById('modalLabel');
+        const customModal = document.getElementById('customModal');
+        const modalBackdrop = document.getElementById('modalBackdrop');
+        const modalInput = document.getElementById('modalInput');
+        const modalConfirm = document.getElementById('modalConfirm');
+        const modalCancel = document.getElementById('modalCancel');
+
+        let currentEditable = null;
+
+        // Показати кастомне модальне вікно
+        function showCustomModal(currentText, editableEl) {
+            currentEditable = editableEl;
+            modalLabel.innerText = `Замінити ${currentText} на:`; // показуємо поточний текст
+            modalInput.value = ''; // поле лишається порожнім
+            customModal.style.display = 'block';
+            modalBackdrop.style.display = 'block';
+            modalInput.focus();
+        }
+
+
+        // Приховати кастомне модальне вікно
+        function hideCustomModal() {
+            customModal.style.display = 'none';
+            modalBackdrop.style.display = 'none';
+            currentEditable = null;
+        }
+
         // Зберігаємо початковий текст для заміни в editable
         document.querySelectorAll('.editable').forEach(el => {
             el.dataset.originalText = el.innerText;
@@ -461,9 +633,24 @@
                 if (!isEditingEnabled) return; // виходимо, якщо редагування вимкнене
                 e.stopPropagation();
                 const current = el.innerText;
-                const updated = prompt('Змініть текст:', current);
-                if (updated !== null && updated !== current) {
-                    const wordToReplace = el.dataset.originalText.trim();
+                showCustomModal(current, el);
+            });
+        });
+
+        // Підтвердження зміни тексту
+        modalConfirm.addEventListener('click', () => {
+            const updated = modalInput.value.trim();
+
+            // Якщо порожній ввід або немає поточного елемента — нічого не робимо
+            if (!updated || !currentEditable) {
+                hideCustomModal();
+                return;
+            }
+
+            if (updated !== currentEditable.innerText) {
+                const wordToReplace = currentEditable.dataset.originalText.trim();
+
+                if (wordToReplace) {
                     document.querySelectorAll('.editable').forEach(otherEl => {
                         if (otherEl.innerText.includes(wordToReplace)) {
                             const regex = new RegExp(wordToReplace, 'g');
@@ -472,8 +659,15 @@
                         }
                     });
                 }
-            });
+            }
+
+            hideCustomModal();
         });
+
+
+        // Скасування редагування
+        modalCancel.addEventListener('click', hideCustomModal);
+
 
         // Встановлюємо CSS змінну --header-height динамічно
         function updateHeaderHeight() {
