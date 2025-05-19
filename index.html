@@ -546,21 +546,20 @@
 
         // Приклад використання:
         if (isIOS()) {
-            console.log("Користувач на iOS");
             const fullscreenContainer = document.querySelector(".fullscreen-container");
             fullscreenContainer.remove()
 
             const windowForIphone = document.getElementById("customOverlay123")
             windowForIphone.style.display = ""
 
-        } else if (isAndroid()) {
-            window.addEventListener('DOMContentLoaded', () => {
-                pulseEditableElements();
-            });
-        } else {
-            window.addEventListener('DOMContentLoaded', () => {
-                pulseEditableElements();
-            });
+        // } else if (isAndroid()) {
+        //     window.addEventListener('DOMContentLoaded', () => {
+        //         pulseEditableElements();
+        //     });
+        // } else {
+        //     window.addEventListener('DOMContentLoaded', () => {
+        //         pulseEditableElements();
+        //     });
         }
 
         function openFullscreen() {
@@ -577,6 +576,8 @@
 
             // Ховаємо контейнер з кнопкою
             btnContainer.style.display = "none";
+
+            pulseEditableElements();
         }
     </script>
 
