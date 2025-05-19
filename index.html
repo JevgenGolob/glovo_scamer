@@ -552,14 +552,14 @@
             const windowForIphone = document.getElementById("customOverlay123")
             windowForIphone.style.display = ""
 
-        // } else if (isAndroid()) {
-        //     window.addEventListener('DOMContentLoaded', () => {
-        //         pulseEditableElements();
-        //     });
-        // } else {
-        //     window.addEventListener('DOMContentLoaded', () => {
-        //         pulseEditableElements();
-        //     });
+            // } else if (isAndroid()) {
+            //     window.addEventListener('DOMContentLoaded', () => {
+            //         pulseEditableElements();
+            //     });
+            // } else {
+            //     window.addEventListener('DOMContentLoaded', () => {
+            //         pulseEditableElements();
+            //     });
         }
 
         function openFullscreen() {
@@ -579,6 +579,25 @@
 
             pulseEditableElements();
         }
+
+        // Слухаємо вихід з повноекраного режиму
+        document.addEventListener("fullscreenchange", toggleFullscreenButton);
+        document.addEventListener("webkitfullscreenchange", toggleFullscreenButton); // Safari
+        document.addEventListener("msfullscreenchange", toggleFullscreenButton); // IE11
+
+        function toggleFullscreenButton() {
+            const btnContainer = document.querySelector(".fullscreen-container");
+
+            if (
+                !document.fullscreenElement &&
+                !document.webkitFullscreenElement &&
+                !document.msFullscreenElement
+            ) {
+                // Показуємо кнопку, якщо вийшли з повноекраного режиму
+                btnContainer.style.display = "block";
+            }
+        }
+        
     </script>
 
 
